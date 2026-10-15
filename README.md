@@ -1,5 +1,7 @@
 # k6 Online Boutique 性能测试
 
+[![k6 smoke](https://github.com/CHa05s/k6-online-boutique-perf/actions/workflows/k6.yml/badge.svg)](https://github.com/CHa05s/k6-online-boutique-perf/actions/workflows/k6.yml)
+
 基于 [k6](https://grafana.com/docs/k6/latest/) 对 Google 开源微服务电商系统 [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo)(11 个微服务、gRPC 通信)的分层性能测试项目。
 
 ## 被测系统
