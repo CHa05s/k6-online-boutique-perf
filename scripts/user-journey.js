@@ -43,8 +43,6 @@ export const options = {
     http_req_duration: ['p(95)<500'],
     http_req_failed: ['rate<0.01'],
   },
-  // 探索性调参时不硬性中断,CI 中再开启严格模式
-  abortOnFail: false,
 };
 
 // 用户行为比例建模:浏览 75% / 加购 15% / 下单 10%
@@ -75,16 +73,17 @@ function browse() {
 }
 
 // 加购:POST 表单到购物车
+// 注:k6 默认跟随重定向,302 会被跟到 /cart 的 200,两种状态码均视为成功
 function addToCart() {
   const productId = randomProductId();
   const res = http.post(`${BASE_URL}/cart`, {
     product_id: productId,
     quantity: '1',
   });
-  check(res, { 'add cart 302': (r) => r.status === 302 });
+  check(res, { 'add cart ok': (r) => r.status === 302 || r.status === 200 });
 }
 
-// 下单:完整结算链路
+// 下单:完整结算链路(成功后前端渲染订单确认页)
 function checkout() {
   addToCart();
   const res = http.post(`${BASE_URL}/cart/checkout`, CHECKOUT_FORM);

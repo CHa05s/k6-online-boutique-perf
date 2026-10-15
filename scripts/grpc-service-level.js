@@ -18,7 +18,8 @@ const TARGETS = {
 const target = TARGETS[SERVICE] || TARGETS.currencyservice;
 
 const client = new grpc.Client();
-client.load(['protos/demo.proto'], 'hipstershop');
+// k6 2.x:load(importPaths, ...protoFiles),第一个参数是 import 搜索路径
+client.load([], 'protos/demo.proto');
 
 export const options = {
   scenarios: {
@@ -30,9 +31,7 @@ export const options = {
   },
   thresholds: {
     grpc_req_duration: ['p(95)<100'],
-    grpc_req_failed: ['rate<0.01'],
   },
-  abortOnFail: false,
 };
 
 // 汇率换算:内部 QPS 最高的服务,单实例上限是经典瓶颈

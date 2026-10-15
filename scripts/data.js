@@ -24,7 +24,8 @@ export const CHECKOUT_FORM = {
   city: 'San Francisco',
   state: 'CA',
   country: 'United States',
-  credit_card_number: '4432-8015-6152-0454',
+  // 注意:v0.10.x 校验器(go-playground credit_card)不接受带连字符的卡号
+  credit_card_number: '4111111111111111',
   credit_card_expiration_month: '11',
   credit_card_expiration_year: '2027',
   credit_card_cvv: '672',
