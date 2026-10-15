@@ -1,0 +1,90 @@
+# Online Boutique (Google microservices-demo) v0.10.7
+# 上游仓库已不提供 docker-compose,本文件依据官方 Kubernetes 清单编写,镜像与服务端口完全一致。
+# 部分 gRPC 服务端口额外发布到宿主机,用于 k6 的分层压测(绕过前端直连服务)。
+services:
+  frontend:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/frontend:v0.10.7
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+      CURRENCY_SERVICE_ADDR: "currencyservice:7000"
+      CART_SERVICE_ADDR: "cartservice:7070"
+      RECOMMENDATION_SERVICE_ADDR: "recommendationservice:8080"
+      SHIPPING_SERVICE_ADDR: "shippingservice:50051"
+      CHECKOUT_SERVICE_ADDR: "checkoutservice:5050"
+      AD_SERVICE_ADDR: "adservice:9555"
+    depends_on:
+      - cartservice
+      - productcatalogservice
+      - currencyservice
+      - recommendationservice
+      - shippingservice
+      - checkoutservice
+      - adservice
+
+  cartservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/cartservice:v0.10.7
+    ports:
+      - "7070:7070"
+    environment:
+      PORT: "7070"
+      REDIS_ADDR: "redis:6379"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+
+  productcatalogservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/productcatalogservice:v0.10.7
+    ports:
+      - "3550:3550"
+    environment:
+      PORT: "3550"
+
+  currencyservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/currencyservice:v0.10.7
+    ports:
+      - "7000:7000"
+    environment:
+      PORT: "7000"
+
+  paymentservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/paymentservice:v0.10.7
+    environment:
+      PORT: "50051"
+
+  shippingservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/shippingservice:v0.10.7
+    environment:
+      PORT: "50051"
+
+  emailservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/emailservice:v0.10.7
+    environment:
+      PORT: "5000"
+
+  checkoutservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/checkoutservice:v0.10.7
+    environment:
+      PORT: "5050"
+      PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+      SHIPPING_SERVICE_ADDR: "shippingservice:50051"
+      PAYMENT_SERVICE_ADDR: "paymentservice:50051"
+      EMAIL_SERVICE_ADDR: "emailservice:5000"
+      CURRENCY_SERVICE_ADDR: "currencyservice:7000"
+      CART_SERVICE_ADDR: "cartservice:7070"
+
+  recommendationservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/recommendationservice:v0.10.7
+    ports:
+      - "8081:8080"
+    environment:
+      PORT: "8080"
+
+  adservice:
+    image: us-central1-docker.pkg.dev/online-boutique-ci/microservices-demo/adservice:v0.10.7
+    environment:
+      PORT: "9555"

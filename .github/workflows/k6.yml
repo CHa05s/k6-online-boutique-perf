@@ -1,0 +1,39 @@
+name: k6 smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start Online Boutique
+        run: |
+          docker compose up -d
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/ > /dev/null; then
+              echo "frontend ready"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "frontend not ready, dumping logs"
+          docker compose logs frontend
+          exit 1
+
+      - uses: grafana/setup-k6-action@v1
+
+      - name: HTTP 全链路冒烟
+        run: k6 run -e SCENARIO=smoke scripts/user-journey.js
+
+      - name: gRPC 汇率服务冒烟
+        run: k6 run -e SERVICE=currencyservice -e DURATION=30s scripts/grpc-service-level.js
+
+      - name: gRPC 商品目录冒烟
+        run: k6 run -e SERVICE=productcatalogservice -e DURATION=30s scripts/grpc-service-level.js
